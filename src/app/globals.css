@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --primary: #1C76D5;
+  --neutral-1: #282828;
+  --neutral-2: #424242;
+  --neutral-3: #5B5B5B;
+  --neutral-4: #686868;
+  --neutral-5: #F0F0F0;
+  --neutral-8: #FFFFFF;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Open Sans, Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
