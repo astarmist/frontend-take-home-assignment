@@ -10,11 +10,11 @@ import { TextUtils } from "@/app/utils/textUtils";
 
 interface ResultItemProps {
   item: SearchResultItem;
-  searchText: string;
+  highlightText: string;
 }
 
 const ResultItem = (props: ResultItemProps) => {
-  const { item, searchText } = props;
+  const { item, highlightText } = props;
 
   return (
     <ResultItemWrapper>
@@ -24,7 +24,7 @@ const ResultItem = (props: ResultItemProps) => {
         dangerouslySetInnerHTML={{
           __html: TextUtils.formatMatchedText(
             item.DocumentExcerpt.Text,
-            searchText
+            highlightText
           ),
         }}
       />

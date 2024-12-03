@@ -1,19 +1,19 @@
+import { useEffect, useState } from "react";
+import { SearchResultData, SearchResultItem } from "../types";
+import ResultItem from "./result-item";
 import {
   SearchResultContent,
   SearchResultHeader,
   SearchResultWrapper,
 } from "./search-result.styles";
-import { SearchResultData, SearchResultItem } from "../types";
-import { useEffect, useState } from "react";
-import ResultItem from "./result-item";
 
 interface SearchResultProps {
-  searchText: string;
+  highlightText: string;
   results: SearchResultData;
 }
 
 const SearchResult = (props: SearchResultProps) => {
-  const { results, searchText } = props;
+  const { results, highlightText } = props;
   const { TotalNumberOfResults, ResultItems } = results;
   const [filteredResultItems, setFilteredResultItems] = useState<
     SearchResultItem[]
@@ -24,25 +24,30 @@ const SearchResult = (props: SearchResultProps) => {
       return `Showing ${filteredResultItems.length} of ${TotalNumberOfResults}`;
     } else {
       // Show only when there is user input, as an empty search term will return all the results
-      if (searchText.length > 1) {
+      if (highlightText && highlightText.length > 1) {
         return "No result found. You may want to try changing your search term.";
       }
     }
   };
 
   useEffect(() => {
-    setFilteredResultItems(() => {
-      /* Title is excluded from the search term
-       * This is because user's search term might be included in the title and not the content, but nothing will
-       * get highlighted in the content, which makes it look like a bug
-       */
-      return ResultItems.filter((item) =>
-        item.DocumentExcerpt.Text.toLowerCase().includes(
-          searchText.toLowerCase()
-        )
-      );
-    });
-  }, [ResultItems, searchText]);
+    if (highlightText) {
+      setFilteredResultItems(() => {
+        /* Title is excluded from the search term
+         * This is because user's search term might be included in the title and not the content, but nothing will
+         * get highlighted in the content, which makes it look like a bug
+         */
+        return ResultItems.filter((item) =>
+          item.DocumentExcerpt.Text.toLowerCase().includes(
+            highlightText.toLowerCase()
+          )
+        );
+      });
+    } else {
+      // Return all items if search input is empty
+      setFilteredResultItems(ResultItems);
+    }
+  }, [ResultItems, highlightText]);
 
   return (
     <SearchResultWrapper>
@@ -53,7 +58,7 @@ const SearchResult = (props: SearchResultProps) => {
             <ResultItem
               item={item}
               key={item.DocumentId}
-              searchText={searchText}
+              highlightText={highlightText}
             />
           ))}
       </SearchResultContent>

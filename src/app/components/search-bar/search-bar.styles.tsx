@@ -1,8 +1,13 @@
 import BREAKPOINTS from "@/app/breakpoints";
+import Image from "next/image";
 import { styled } from "styled-components";
 
 interface SearchStatusProps {
   $error: boolean;
+}
+
+interface SearchClearProps {
+  $show: boolean;
 }
 
 export const SearchBarWrapper = styled.div`
@@ -22,7 +27,7 @@ export const SearchBarWrapper = styled.div`
 `;
 
 export const SearchInput = styled.input`
-  padding: 0 1.5rem;
+  padding: 0 4rem 0 1.5rem;
   border-radius: 8px 0 0 8px;
   border: 1px solid var(--neutral-4);
   flex: 1;
@@ -35,6 +40,25 @@ export const SearchInput = styled.input`
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
     max-width: calc(100vw - 14rem);
+  }
+`;
+
+export const SearchClear = styled(Image)<SearchClearProps>`
+  position: absolute;
+  right: 21rem;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: none;
+
+  ${(props) => (props.$show ? "display: block;" : "")}
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    right: 15rem;
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    right: 13rem;
   }
 `;
 
