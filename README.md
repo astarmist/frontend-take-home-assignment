@@ -16,9 +16,18 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Running Automated Test
+
+[Jest](https://jestjs.io/) is used for writing automated tests.
+
+Running the test:
+
 ```bash
 npm run test
 ```
+
+Once the test has finished running, a test report `test-report.html` will be generated.<br>
+You can view the report by opening it in the browser of your choice.
 
 ## Styling
 
