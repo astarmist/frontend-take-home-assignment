@@ -1,11 +1,16 @@
 import BREAKPOINTS from "@/app/breakpoints";
 import { styled } from "styled-components";
 
+interface SearchStatusProps {
+  $error: boolean;
+}
+
 export const SearchBarWrapper = styled.div`
   position: relative;
   display: flex;
   flex-flow: row wrap;
   padding: 3rem 10rem;
+  box-shadow: 0px 4px 8px 4px rgba(224, 228, 229, 0.35);
 
   @media (max-width: ${BREAKPOINTS.md}px) {
     padding: 2rem 4rem;
@@ -42,13 +47,16 @@ export const SearchButton = styled.button`
   color: var(--neutral-8);
   border-radius: 8px;
   border: none;
+  font-size: 18px;
   cursor: pointer;
   // To overlap with the corners of the text input
   flex: 0 0 calc(10rem - 10px);
   transform: translateX(-10px);
 `;
 
-export const SearchStatus = styled.div`
+export const SearchStatus = styled.div<SearchStatusProps>`
   position: absolute;
-  bottom: 0;
+  bottom: 1rem;
+
+  ${(props) => (props.$error ? "color: var(--error);" : "")}
 `;

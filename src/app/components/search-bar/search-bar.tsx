@@ -14,6 +14,7 @@ interface SearchBarProps {
 }
 
 const SearchBar = (props: SearchBarProps) => {
+  const [hasError, setHasError] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [statusText, setStatusText] = useState<string>("");
   const { onSearch } = props;
@@ -27,8 +28,13 @@ const SearchBar = (props: SearchBarProps) => {
     const data = await response.json();
 
     if (data) {
+      setHasError(false);
       setStatusText("");
       onSearch(data, searchText);
+    } else {
+      // Error handling, i.e due to network failure
+      setHasError(true);
+      setStatusText("Error: Unable to fetch data");
     }
   };
 
@@ -54,7 +60,7 @@ const SearchBar = (props: SearchBarProps) => {
         <span>Search</span>
       </SearchButton>
 
-      <SearchStatus> {statusText} </SearchStatus>
+      <SearchStatus $error={hasError}> {statusText} </SearchStatus>
     </SearchBarWrapper>
   );
 };
