@@ -1,8 +1,13 @@
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import SearchContext from "../../search-context";
+import {
+  SEARCH_API_ENDPOINT,
+  SEARCH_SUGGESTION_API_ENDPINT,
+} from "../constants";
 import SearchBar from "./search-bar";
-import { SEARCH_API_ENDPOINT } from "../constants.ts";
+import SearchSuggestion from "./search-suggestion/search-suggestion";
 
-const mockedData = {
+const mockedResultData = {
   TotalNumberOfResults: 100,
   Page: 1,
   PageSize: 3,
@@ -111,9 +116,33 @@ const mockedData = {
   ],
 };
 
+const mockSuggestionData = {
+  stemmedQueryTerm: "child",
+  suggestions: [
+    "child care",
+    "child vaccination",
+    "child health",
+    "child education",
+    "child development account",
+    "register childcare",
+  ],
+};
+
 describe("Test Search Bar", () => {
   beforeEach(() => {
-    fetch.resetMocks();
+    global.fetch = jest.fn().mockImplementation((url) =>
+      Promise.resolve({
+        status: 200,
+        json: () =>
+          url.includes(SEARCH_API_ENDPOINT)
+            ? Promise.resolve(mockedResultData)
+            : Promise.resolve(mockSuggestionData),
+      })
+    );
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it("Search Button renders correctly", () => {
@@ -124,8 +153,6 @@ describe("Test Search Bar", () => {
   });
 
   it("Performs the search when Search Button is clicked", async () => {
-    fetch.mockResponseOnce(JSON.stringify(mockedData));
-
     const mockOnSearch = jest.fn();
     render(<SearchBar onSearch={mockOnSearch} />);
 
@@ -134,7 +161,51 @@ describe("Test Search Bar", () => {
       await fireEvent.click(searchButton);
     });
 
-    expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(SEARCH_API_ENDPOINT);
+  });
+});
+
+describe("Test Search Suggestion", () => {
+  beforeEach(() => {
+    global.fetch = jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        status: 200,
+        json: () => Promise.resolve(mockSuggestionData),
+      })
+    );
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const mockContext = {
+    searchText: "child",
+    setSearchText: jest.fn(),
+    showSuggestion: true,
+    setShowSuggestion: jest.fn(),
+  };
+
+  const defaultProps = {
+    suggestionIndex: 0,
+    onSelect: jest.fn(),
+    onShowSuggestions: jest.fn(),
+  };
+
+  const renderWithContext = (ui, context = mockContext) => {
+    return render(
+      <SearchContext.Provider value={context}>{ui}</SearchContext.Provider>
+    );
+  };
+
+  it("should display suggestions when there are 2 or more characters for the search term", async () => {
+    renderWithContext(<SearchSuggestion {...defaultProps} />);
+
+    await screen.findAllByText("child");
+
+    const suggestionItems = screen.getAllByText(/child/i);
+
+    expect(fetch).toHaveBeenCalledWith(SEARCH_SUGGESTION_API_ENDPINT);
+    expect(suggestionItems).toHaveLength(6);
   });
 });
