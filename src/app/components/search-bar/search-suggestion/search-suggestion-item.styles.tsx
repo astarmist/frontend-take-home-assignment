@@ -13,5 +13,9 @@ export const SearchSuggestionItemWrapper = styled.li<SearchSuggestionItemWrapper
     margin-top: 0.5rem;
   }
 
+  &:last-of-type {
+    border-radius: 0 0 10px 10px;
+  }
+
   ${(props) => (props.$selected ? "background-color: var(--neutral-5);" : "")}
 `;

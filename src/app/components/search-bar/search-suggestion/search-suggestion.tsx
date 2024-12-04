@@ -1,64 +1,59 @@
-import SearchContext from "@/app/search-context";
+import { SearchContext } from "@/app/search-context";
 import { useContext, useEffect, useState } from "react";
 import { SEARCH_SUGGESTION_API_ENDPINT } from "../../constants";
 import SearchSuggestionItem from "./search-suggestion-item";
-import { SearchSuggestionWrapper } from "./search-suggestion.styles";
+import {
+  SearchSuggestionInfo,
+  SearchSuggestionWrapper,
+} from "./search-suggestion.styles";
 
-interface SearchSuggestionProps {
-  suggestionIndex: number;
-  onSelect: (suggestionIndex: number) => void;
-  onShowSuggestions: (suggestions: string[]) => void;
-}
-
-const SearchSuggestion = (props: SearchSuggestionProps) => {
-  const { showSuggestion = false, setShowSuggestion } =
-    useContext(SearchContext);
+const SearchSuggestion = () => {
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] =
-    useState<number>(-1);
-  const { searchText = "", setSearchText } = useContext(SearchContext);
-  const { suggestionIndex, onSelect, onShowSuggestions } = props;
+  const {
+    searchText = "",
+    setSearchText,
+    showSuggestion = false,
+    setShowSuggestion,
+    selectedSuggestionIndex = -1,
+    setSelectedSuggestionIndex,
+    suggestions,
+    setSuggestions,
+  } = useContext(SearchContext);
 
   useEffect(() => {
-    const fetchSuggestions = async () => {
+    const fetchAndFilterSuggestions = async () => {
       const response = await fetch(SEARCH_SUGGESTION_API_ENDPINT);
       const data = await response.json();
       const suggestions = data.suggestions;
-      console.log("fetchSuggestions called");
+      let showSuggestion = false;
 
       if (suggestions) {
-        // Show suggestions that matches with the search term when user keys in more than 2 characters
+        // Filter suggestions that matches with the search term when user keys in more than 2 characters
+        // If there are no filtered suggestions, hide the whole component
         if (searchText && searchText.length > 2) {
           const filteredSuggestions = suggestions.filter((suggestion: string) =>
             suggestion.toLowerCase().includes(searchText.toLowerCase())
           );
 
           if (filteredSuggestions.length > 0) {
+            showSuggestion = true;
             setFilteredSuggestions(filteredSuggestions);
-            setShowSuggestion(true);
-            onShowSuggestions(filteredSuggestions);
-          } else {
-            setFilteredSuggestions([]);
-            setShowSuggestion(false);
+            setSuggestions(suggestions);
           }
-        } else {
-          setShowSuggestion(false);
         }
       } else {
         console.error("Error: Unable to fetch suggestions");
       }
+
+      setShowSuggestion(showSuggestion);
     };
 
-    fetchSuggestions();
+    fetchAndFilterSuggestions();
   }, [searchText]);
-
-  useEffect(() => {
-    setSelectedSuggestionIndex(suggestionIndex);
-  }, [suggestionIndex]);
 
   const handleClick = (index: number) => {
     setSelectedSuggestionIndex(index);
-    onSelect(index);
+    setSearchText(suggestions[index] || "");
     setTimeout(() => {
       setShowSuggestion(false);
     }, 100);
@@ -66,6 +61,10 @@ const SearchSuggestion = (props: SearchSuggestionProps) => {
 
   return (
     <SearchSuggestionWrapper $show={showSuggestion}>
+      <SearchSuggestionInfo>
+        Tip: You can use the Up/Down arrow keys to choose between the options.
+        Press "ESC" to close suggestions.
+      </SearchSuggestionInfo>
       <ul>
         {filteredSuggestions &&
           filteredSuggestions.map((suggestion: string, index: number) => (

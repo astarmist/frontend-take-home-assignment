@@ -39,6 +39,7 @@ export const SearchInput = styled.input`
   }
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding-right: 3rem;
     max-width: calc(100vw - 14rem);
   }
 `;
@@ -66,6 +67,7 @@ export const SearchButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 10rem;
   height: 56px;
   background-color: var(--primary);
   color: var(--neutral-8);
@@ -74,13 +76,16 @@ export const SearchButton = styled.button`
   font-size: 18px;
   cursor: pointer;
   // To overlap with the corners of the text input
-  flex: 0 0 calc(10rem - 10px);
   transform: translateX(-10px);
 `;
 
 export const SearchStatus = styled.div<SearchStatusProps>`
   position: absolute;
   bottom: 1rem;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    bottom: 0.25rem;
+  }
 
   ${(props) => (props.$error ? "color: var(--error);" : "")}
 `;

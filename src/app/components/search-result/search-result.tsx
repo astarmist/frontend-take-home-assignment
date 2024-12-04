@@ -37,11 +37,17 @@ const SearchResult = (props: SearchResultProps) => {
          * This is because user's search term might be included in the title and not the content, but nothing will
          * get highlighted in the content, which makes it look like a bug
          */
-        return ResultItems.filter((item) =>
-          item.DocumentExcerpt.Text.toLowerCase().includes(
-            highlightText.toLowerCase()
-          )
-        );
+        return ResultItems.filter((item) => {
+          // If highlight text contains multiple words, the excerpt needs to contain all the words to be considered a match
+          const excerpt = item.DocumentExcerpt.Text.toLowerCase();
+          const words = highlightText.split(" ");
+
+          if (words.length > 2) {
+            return words.every((word) => excerpt.includes(word.toLowerCase()));
+          } else {
+            return excerpt.includes(highlightText.toLowerCase());
+          }
+        });
       });
     } else {
       // Return all items if search input is empty

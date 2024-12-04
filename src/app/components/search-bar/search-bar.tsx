@@ -5,7 +5,7 @@ import {
   SearchInput,
   SearchStatus,
 } from "@/app/components/search-bar/search-bar.styles";
-import SearchContext from "@/app/search-context";
+import { SearchContext } from "@/app/search-context";
 import { CrossIcon, SearchIcon } from "@/assets/icons";
 import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -19,14 +19,16 @@ interface SearchBarProps {
 
 const SearchBar = (props: SearchBarProps) => {
   const [hasError, setHasError] = useState<boolean>(false);
-  const { searchText = "", setSearchText } = useContext(SearchContext);
   const [statusText, setStatusText] = useState<string>("");
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] =
-    useState<number>(-1);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const {
+    searchText = "",
+    setSearchText,
+    selectedSuggestionIndex = -1,
+    setSelectedSuggestionIndex,
+    suggestions,
+  } = useContext(SearchContext);
+  const { setShowSuggestion } = useContext(SearchContext);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { showSuggestion = false, setShowSuggestion } =
-    useContext(SearchContext);
   const { onSearch } = props;
 
   // To ensure that the search is performed using the updated searchText
@@ -38,6 +40,10 @@ const SearchBar = (props: SearchBarProps) => {
 
   const handleSearch = async () => {
     setStatusText("Searching...");
+
+    setTimeout(() => {
+      hideSuggestion();
+    }, 100);
 
     const response = await fetch(SEARCH_API_ENDPOINT);
     const data = await response.json();
@@ -66,64 +72,52 @@ const SearchBar = (props: SearchBarProps) => {
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setSelectedSuggestionIndex((prevIndex) => {
-          if (prevIndex === suggestions.length - 1) {
-            return prevIndex;
-          }
-          return (prevIndex + 1) % suggestions.length;
-        });
+        const nextIndex =
+          selectedSuggestionIndex === suggestions.length - 1
+            ? selectedSuggestionIndex
+            : (selectedSuggestionIndex + 1) % suggestions.length;
+        setSelectedSuggestionIndex(nextIndex);
         break;
       case "ArrowUp":
         e.preventDefault();
-        setSelectedSuggestionIndex((prevIndex) => {
-          if (prevIndex <= 0) {
-            return -1;
-          }
-          return (prevIndex - 1) % suggestions.length;
-        });
+        const prevIndex =
+          selectedSuggestionIndex <= 0
+            ? -1
+            : (selectedSuggestionIndex - 1) % suggestions.length;
+        setSelectedSuggestionIndex(prevIndex);
         break;
       case "Enter":
         e.preventDefault();
+        // If user has selected a suggestion, set the search text to be the suggestion
+        // Otherwise, the search text will just be from the raw user's input
         if (selectedSuggestionIndex > -1) {
           setSearchText(suggestions[selectedSuggestionIndex]);
-        } else {
-          handleSearch();
         }
-
-        setTimeout(() => {
-          setSelectedSuggestionIndex(-1);
-          setShowSuggestion(false);
-        }, 100);
+        handleSearch();
 
         break;
 
       // Not part of the AC, but adding it for a better UX to hide the suggestions when user wants to
       case "Escape":
         e.preventDefault();
-        setSelectedSuggestionIndex(0);
-        setShowSuggestion(false);
+        hideSuggestion();
       default:
         break;
     }
   };
 
-  const handleSuggestionSelect = (index: number) => {
-    setSelectedSuggestionIndex(index);
-    setSearchText(suggestions[index] || "");
-  };
-
-  const handleShowSuggestions = (suggestions: string[]) => {
-    setSuggestions(suggestions);
-  };
-
   const handleSearchClearClick = () => {
     setSearchText("");
-    setSelectedSuggestionIndex(-1);
-    setShowSuggestion(false);
+    hideSuggestion();
 
     if (inputRef.current) {
       inputRef.current.focus();
     }
+  };
+
+  const hideSuggestion = () => {
+    setSelectedSuggestionIndex(-1);
+    setShowSuggestion(false);
   };
 
   return (
@@ -131,14 +125,12 @@ const SearchBar = (props: SearchBarProps) => {
       <SearchInput
         ref={inputRef}
         value={searchText || ""}
+        placeholder="Enter your search input"
         onChange={(e: React.ChangeEvent) => handleInputChange(e)}
         onKeyDown={(e: React.KeyboardEvent) => handleInputKeydown(e)}
       />
-      <SearchSuggestion
-        suggestionIndex={selectedSuggestionIndex}
-        onSelect={handleSuggestionSelect}
-        onShowSuggestions={handleShowSuggestions}
-      />
+
+      <SearchSuggestion />
 
       <SearchClear
         $show={searchText?.length >= 1}
